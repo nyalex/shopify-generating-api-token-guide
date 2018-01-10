@@ -4,38 +4,42 @@
 require_once("inc/functions.php");
 
 // Set variables for our request
-$shop = "demo-shop";
 $api_key = "1r30mrvCFMfq2DLGuIXyY2veEJVgTtDD";
 $shared_secret = "TBB5wltKarRtKn5mUVZck9RxHePNN6Jo";
-$code = $_GET["code"];
-$timestamp = $_GET["timestamp"];
-$signature = $_GET["signature"];
+$params = $_GET; // Retrieve all request parameters
+$hmac = $_GET['hmac']; // Retrieve HMAC request parameter
 
-// Compile signature data
-$signature_data = $shared_secret . "code=" . $code . "shop=". $shop . ".myshopify.comtimestamp=" . $timestamp;
+$params = array_diff_key($params, array('hmac' => '')); // Remove hmac from params
+ksort($params); // Sort params lexographically
 
-// Use signature data to check that the response is from Shopify or not
-if (md5($signature_data) === $signature) {
+$computed_hmac = hash_hmac('sha256', http_build_query($params), $shared_secret);
+
+// Use hmac data to check that the response is from Shopify or not
+if (hash_equals($hmac, $computed_hmac)) {
 
 	// Set variables for our request
 	$query = array(
-		"Content-type" => "application/json", // Tell Shopify that we're expecting a response in JSON format
 		"client_id" => $api_key, // Your API key
 		"client_secret" => $shared_secret, // Your app credentials (secret key)
-		"code" => $code // Grab the access key from the URL
+		"code" => $params['code'] // Grab the access key from the URL
 	);
 
-	// Call our Shopify function
-	$shopify_response = shopify_call(NULL, $shop, "/admin/oauth/access_token", $query, 'POST');
+	// Generate access token URL
+	$access_token_url = "https://" . $params['shop'] . "/admin/oauth/access_token";
 
-	// Convert response into a nice and simple array
-	$shopify_response = json_decode($shopify_response['response'], TRUE);
+	// Configure curl client and execute request
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_URL, $access_token_url);
+	curl_setopt($ch, CURLOPT_POST, count($query));
+	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($query));
+	$result = curl_exec($ch);
+	curl_close($ch);
 
-	// Store the response
-	$token = $shopify_response['access_token'];
-
-	// Show token (DO NOT DO THIS IN YOUR PRODUCTION ENVIRONMENT)
-	echo $token;
+	// Store the access token
+	$result = json_decode($result, true);
+	$access_token = $result['access_token'];
+	echo $access_token;
 
 } else {
 	// Someone is trying to be shady!
