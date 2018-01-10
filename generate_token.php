@@ -39,6 +39,8 @@ if (hash_equals($hmac, $computed_hmac)) {
 	// Store the access token
 	$result = json_decode($result, true);
 	$access_token = $result['access_token'];
+
+	// Show the access token (don't do this in production!)
 	echo $access_token;
 
 } else {
