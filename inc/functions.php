@@ -53,7 +53,7 @@ function shopify_call($token, $shop, $api_endpoint, $query = array(), $method = 
 		array_shift($header_data); // Remove status, we've already set it above
 		foreach($header_data as $part) {
 			$h = explode(":", $part);
-			$headers[trim($h[0])] = trim($h[1]);
+			$headers[trim($h[0])] = trim(substr($part,strpos($part,':') + 1));
 		}
 
 		// Return headers and Shopify's response
