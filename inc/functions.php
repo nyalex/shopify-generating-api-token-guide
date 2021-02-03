@@ -4,7 +4,7 @@ function shopify_call($token, $shop, $api_endpoint, $query = array(), $method = 
     
 	// Build URL
 	$url = "https://" . $shop . ".myshopify.com" . $api_endpoint;
-	if (!is_null($query) && in_array($method, array('GET', 	'DELETE'))) $url = $url . "?" . http_build_query($query);
+	if (!is_null($query) && in_array($method, array('GET', 	'DELETE'))) $url = $url . "" . http_build_query($query);
 
 	// Configure cURL
 	$curl = curl_init($url);
@@ -49,6 +49,13 @@ function shopify_call($token, $shop, $api_endpoint, $query = array(), $method = 
 		// Convert headers into an array
 		$headers = array();
 		$header_data = explode("\n",$response[0]);
+				$a=0; // Defining Variable $a in the function
+	for($f=0;$f<count($header_data)-1;$f++){
+	if (strpos($header_data[$f], 'link:') !== false) {
+  $a=$f; // assinging $a with the number that conatins link in the array to make sure its the correct value
+}	
+	}
+       $link_value=$header_data[$a]; //Assigning Link Value 
 		$headers['status'] = $header_data[0]; // Does not contain a key, have to explicitly set
 		array_shift($header_data); // Remove status, we've already set it above
 		foreach($header_data as $part) {
@@ -57,7 +64,7 @@ function shopify_call($token, $shop, $api_endpoint, $query = array(), $method = 
 		}
 
 		// Return headers and Shopify's response
-		return array('headers' => $headers, 'response' => $response[1]);
+		return array('headers' => $headers, 'response' => $response[1],$link_value); // returning link value for pagination 
 
 	}
     
