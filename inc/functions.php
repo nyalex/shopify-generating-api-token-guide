@@ -55,7 +55,7 @@ function shopify_call($token, $shop, $api_endpoint, $query = array(), $method = 
   $a=$f; // assinging $a with the number that conatins link in the array to make sure its the correct value
 }	
 	}
-       $link_value_=$header_data[$a]; //Assigning Link Value 
+       $link_value=$header_data[$a]; //Assigning Link Value 
 		$headers['status'] = $header_data[0]; // Does not contain a key, have to explicitly set
 		array_shift($header_data); // Remove status, we've already set it above
 		foreach($header_data as $part) {
